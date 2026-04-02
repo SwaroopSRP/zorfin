@@ -1,0 +1,53 @@
+{
+    "name": "zorfin",
+    "version": "1.0.0",
+    "description": "Finance dashboard backend for Zorvyn, with RBAC, data management, and analytics APIs",
+    "private": true,
+    "keywords": [
+        "typescript",
+        "node",
+        "express",
+        "postgresql",
+        "prisma",
+        "redis",
+        "rest-api",
+        "backend",
+        "finance"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/SwaroopSRP/zorfin"
+    },
+    "license": "ISC",
+    "author": "SwaroopSRP",
+    "type": "module",
+    "main": "dist/index.js",
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "fmt": "prettier --write .",
+        "fmt:check": "prettier --check ."
+    },
+    "dependencies": {
+        "@prisma/adapter-pg": "^7.6.0",
+        "@prisma/client": "^7.6.0",
+        "cors": "^2.8.6",
+        "dotenv": "^17.4.0",
+        "express": "^5.2.1",
+        "pg": "^8.20.0"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.19",
+        "@types/express": "^5.0.6",
+        "@types/node": "^25.5.0",
+        "eslint-config-prettier": "^10.1.8",
+        "prettier": "^3.8.1",
+        "prisma": "^7.6.0",
+        "tsx": "^4.21.0",
+        "typescript": "^6.0.2"
+    }
+}
