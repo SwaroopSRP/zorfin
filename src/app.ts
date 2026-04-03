@@ -1,8 +1,10 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
-import path from "path";
-import { errorHandler } from "./middleware/error.middleware.ts";
+import path from "node:path";
+import errorHandler from "./middleware/error.middleware.ts";
+import requestLogger from "./middleware/logger.middleware.ts";
+import healthCheckRouter from "./modules/healthcheck/healthcheck.routes.ts";
 
 const app = express();
 export default app;
@@ -21,6 +23,10 @@ app.use(
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     })
 );
+app.use(requestLogger);
+
+// Routes
+app.use("/api/v1/health", healthCheckRouter);
 
 app.get("/", (_req, res) => {
     res.format({

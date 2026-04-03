@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiError } from "../utils/errors.ts";
 
-export const errorHandler = (
+const errorHandler = (
     err: any,
     _req: Request,
     res: Response,
@@ -21,3 +21,5 @@ export const errorHandler = (
         message: "Internal Server Error"
     });
 };
+
+export default errorHandler;
