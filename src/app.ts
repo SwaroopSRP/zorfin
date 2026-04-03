@@ -1,13 +1,18 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import path from "path";
+import { errorHandler } from "./middleware/error.middleware.ts";
 
 const app = express();
 export default app;
 
+// Middlewares
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(cookieParser());
 app.use(express.static("public"));
-
+app.use(errorHandler);
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,
@@ -18,7 +23,15 @@ app.use(
 );
 
 app.get("/", (_req, res) => {
-    res.status(200).send(
-        "Welcome! You are now accessing an instance of Zorfin API server. Please refer to the documentation for available endpoints and usage instructions."
-    );
+    res.format({
+        "text/html": () => {
+            res.sendFile(path.join(__dirname, "../public/index.html"));
+        },
+        "text/plain": () => {
+            res.send("Welcome! You are now accessing an instance of Zorfin API server. Please refer to the documentation for available endpoints and usage instructions.");
+        },
+        "application/json": () => {
+            res.json({ message: "Hello from Zorfin API Server!" });
+        }
+    });
 });
