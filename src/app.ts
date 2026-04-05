@@ -3,7 +3,6 @@ import cors from "cors";
 import express from "express";
 import path from "node:path";
 import apiRouter from "./api.routes.ts";
-import { mockAuth } from "./middleware/auth.middleware.ts";
 import errorHandler from "./middleware/error.middleware.ts";
 import requestLogger from "./middleware/logger.middleware.ts";
 
@@ -15,7 +14,6 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
 app.use(express.static("public"));
-app.use(errorHandler);
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,
@@ -25,9 +23,8 @@ app.use(
     })
 );
 app.use(requestLogger);
-app.use(mockAuth);
-
 app.use("/api/v1", apiRouter);
+app.use(errorHandler);
 
 app.get("/", (_req, res) => {
     res.format({

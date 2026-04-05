@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import { Router } from "express";
-import { authorize } from "../../middleware/auth.middleware.ts";
 import validate from "../../middleware/validate.middleware.ts";
+import { authenticate, authorize } from "../auth/auth.middleware.ts";
 import { cleanupUsers, createUser, deleteUser, getUserById, getUsers, updateUser } from "./user.controller.ts";
 import { createUserSchema, getUsersQuerySchema, updateUserSchema, userIdParamSchema } from "./user.schema.ts";
 
@@ -9,6 +9,7 @@ const userRouter = Router();
 
 userRouter.post(
     "/",
+    authenticate,
     authorize(Role.ADMIN),
     validate(createUserSchema),
     createUser
@@ -16,6 +17,7 @@ userRouter.post(
 
 userRouter.get(
     "/",
+    authenticate,
     authorize(Role.ADMIN, Role.ANALYST),
     validate(getUsersQuerySchema, "query"),
     getUsers
@@ -23,6 +25,7 @@ userRouter.get(
 
 userRouter.get(
     "/:id",
+    authenticate,
     authorize(Role.ADMIN, Role.ANALYST),
     validate(userIdParamSchema, "params"),
     getUserById
@@ -30,6 +33,7 @@ userRouter.get(
 
 userRouter.patch(
     "/:id",
+    authenticate,
     authorize(Role.ADMIN),
     validate(updateUserSchema),
     updateUser
@@ -37,6 +41,7 @@ userRouter.patch(
 
 userRouter.delete(
     "/:id",
+    authenticate,
     authorize(Role.ADMIN),
     validate(userIdParamSchema, "params"),
     deleteUser
@@ -44,6 +49,7 @@ userRouter.delete(
 
 userRouter.delete(
     "/cleanup",
+    authenticate,
     authorize(Role.ADMIN),
     cleanupUsers
 );

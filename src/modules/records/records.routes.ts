@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client";
 import { Router } from "express";
-
+import { authenticate, authorize } from "../auth/auth.middleware.ts";
 import {
     cleanupRecords,
     createRecord,
@@ -9,8 +9,6 @@ import {
     getRecords,
     updateRecord,
 } from "./records.controller.ts";
-
-import { authorize } from "../../middleware/auth.middleware.ts";
 import validate from "../../middleware/validate.middleware.ts";
 
 import {
@@ -24,6 +22,7 @@ const recordRouter = Router();
 
 recordRouter.post(
     "/",
+    authenticate,
     authorize(Role.ADMIN, Role.ANALYST),
     validate(createRecordSchema),
     createRecord
@@ -31,6 +30,7 @@ recordRouter.post(
 
 recordRouter.get(
     "/",
+    authenticate,
     authorize(Role.ADMIN, Role.ANALYST),
     validate(getRecordsQuerySchema, "query"),
     getRecords
@@ -38,6 +38,7 @@ recordRouter.get(
 
 recordRouter.get(
     "/:id",
+    authenticate,
     authorize(Role.ADMIN, Role.ANALYST),
     validate(recordIdParamSchema, "params"),
     getRecordById
@@ -45,6 +46,7 @@ recordRouter.get(
 
 recordRouter.patch(
     "/:id",
+    authenticate,
     authorize(Role.ADMIN, Role.ANALYST),
     validate(recordIdParamSchema, "params"),
     validate(updateRecordSchema),
@@ -53,12 +55,14 @@ recordRouter.patch(
 
 recordRouter.delete(
     "/cleanup",
+    authenticate,
     authorize(Role.ADMIN),
     cleanupRecords
 );
 
 recordRouter.delete(
     "/:id",
+    authenticate,
     authorize(Role.ADMIN, Role.ANALYST),
     validate(recordIdParamSchema, "params"),
     deleteRecord
