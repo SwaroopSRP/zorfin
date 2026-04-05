@@ -1,25 +1,20 @@
-import { Role } from "@prisma/client";
+import { Role, Status } from "@prisma/client";
+import { z } from "zod";
 import prisma from "../../config/db.ts";
 import { ApiError } from "../../utils/errors.ts";
+import { updateUserSchema } from "./user.schema.ts";
+
 type CreateUserInput = {
     name: string;
     email: string;
 };
 
+type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
 export const createUser = async (
     data: CreateUserInput & { role?: string },
-    currentUserRole?: string
 ) => {
-    if (!data?.name || !data?.email) {
-        throw new ApiError("Name and email are required", 400);
-    }
-
     const count = await prisma.user.count();
-
-    // Restrict creation to ADMIN
-    if (count > 0 && currentUserRole !== "ADMIN") {
-        throw new ApiError("Only ADMIN can create users", 403);
-    }
 
     // Check duplicate email
     const existing = await prisma.user.findUnique({
@@ -35,7 +30,7 @@ export const createUser = async (
 
     if (count === 0) {
         role = "ADMIN";
-    } else if (data.role && currentUserRole === "ADMIN") {
+    } else if (data.role) {
         role = data.role as Role;
     } else {
         role = "VIEWER";
@@ -91,12 +86,12 @@ export const getUsers = async (
 
     // Role filter
     if (role) {
-        where.role = role as any;
+        where.role = role as Role;
     }
 
     // Status filter
     if (status) {
-        where.status = status as any;
+        where.status = status as Status;
     }
 
     const [users, total] = await Promise.all([
@@ -140,8 +135,7 @@ export const getUserById = async (id: string) => {
 
 export const updateUser = async (
     id: string,
-    data: any,
-    currentUserRole: string
+    data: UpdateUserInput
 ) => {
     const user = await prisma.user.findUnique({
         where: { id },
@@ -153,14 +147,6 @@ export const updateUser = async (
 
     if (user.deleted) {
         throw new ApiError("User already deleted", 400);
-    }
-
-    if (data.role && currentUserRole !== "ADMIN") {
-        throw new ApiError("Only ADMIN can change roles", 403);
-    }
-
-    if (data.status && currentUserRole !== "ADMIN") {
-        throw new ApiError("Only ADMIN can change status", 403);
     }
 
     // Prevent last admin demotion
@@ -197,13 +183,8 @@ export const updateUser = async (
 
 
 export const deleteUser = async (
-    id: string,
-    currentUserRole?: string
+    id: string
 ) => {
-    if (currentUserRole !== "ADMIN") {
-        throw new ApiError("Only ADMIN can delete users", 403);
-    }
-
     const user = await prisma.user.findUnique({
         where: { id },
     });
@@ -240,4 +221,14 @@ export const deleteUser = async (
     });
 
     return deletedUser;
+};
+
+export const cleanupDeletedUsers = async () => {
+    const result = await prisma.user.deleteMany({
+        where: {
+            deleted: true,
+        },
+    });
+
+    return result; // Returns count of deleted users
 };

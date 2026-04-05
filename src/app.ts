@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import path from "node:path";
 import apiRouter from "./api.routes.ts";
+import { mockAuth } from "./middleware/auth.middleware.ts";
 import errorHandler from "./middleware/error.middleware.ts";
 import requestLogger from "./middleware/logger.middleware.ts";
 
@@ -24,6 +25,7 @@ app.use(
     })
 );
 app.use(requestLogger);
+app.use(mockAuth);
 
 app.use("/api/v1", apiRouter);
 

@@ -12,8 +12,8 @@ export const validate =
                 throw new ApiError(errors.join(", "), 400);
             }
 
-            (req as any).validated = {
-                ...((req as any).validated || {}),
+            req.validated = {
+                ...(req.validated || {}),
                 [source]: result.data,
             };
 

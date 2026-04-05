@@ -17,6 +17,10 @@ model User {
   records   Record[]
   deleted   Boolean   @default(false)
   deletedAt DateTime?
+
+  @@index([role])
+  @@index([status])
+  @@index([deleted])
 }
 
 model Record {
@@ -31,6 +35,10 @@ model Record {
   deletedAt DateTime?
   createdAt DateTime   @default(now())
   user      User       @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
+  @@index([type])
+  @@index([category])
 }
 
 enum Role {

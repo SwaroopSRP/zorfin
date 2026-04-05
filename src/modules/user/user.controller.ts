@@ -4,16 +4,20 @@ import { success } from "../../utils/responses.ts";
 import * as userService from "./user.service.ts";
 
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
-    const currentUserRole = req.headers["role"] as string | undefined;
-
-    const user = await userService.createUser(req.body, currentUserRole);
+    const user = await userService.createUser(req.validated?.body);
 
     return success(res, user, "User created", 201);
 });
 
 export const getUsers = asyncHandler(async (req: Request, res: Response) => {
-    const { page, limit, includeDeleted, search, role, status } =
-        (req as any).validated.query;
+    const {
+        page,
+        limit,
+        includeDeleted,
+        search,
+        role,
+        status,
+    } = req.validated?.query ?? {};
 
     const result = await userService.getUsers(
         page,
@@ -37,12 +41,10 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const currentUserRole = req.headers["role"] as string;
 
     const updatedUser = await userService.updateUser(
         Array.isArray(id) ? id[0] : id,
-        req.body,
-        currentUserRole
+        req.validated?.body
     );
 
     return success(res, updatedUser, "User updated");
@@ -50,13 +52,22 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const currentUserRole =
-        (req.headers["role"] as string | undefined)?.toUpperCase();
 
     const user = await userService.deleteUser(
-        Array.isArray(id) ? id[0] : id,
-        currentUserRole
+        Array.isArray(id) ? id[0] : id
     );
 
     return success(res, user, "User deleted");
+});
+
+export const cleanupUsers = asyncHandler(async (_req: Request, res: Response) => {
+    const result = await userService.cleanupDeletedUsers();
+
+    return success(
+        res,
+        result,
+        result.count === 0
+            ? "No users to clean up"
+            : `Cleanup completed. ${result.count} users permanently deleted`
+    );
 });
