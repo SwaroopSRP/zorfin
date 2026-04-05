@@ -1,50 +1,34 @@
 import { Role, Status } from "@prisma/client";
+import bcrypt from "bcrypt";
 import { z } from "zod";
 import prisma from "../../config/db.ts";
 import { ApiError } from "../../utils/errors.ts";
-import { updateUserSchema } from "./user.schema.ts";
+import { createUserSchema, updateUserSchema } from "./user.schema.ts";
 
-type CreateUserInput = {
-    name: string;
-    email: string;
-};
+
+type CreateUserInput = z.infer<typeof createUserSchema>;
 
 type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
-export const createUser = async (
-    data: CreateUserInput & { role?: string },
-) => {
-    const count = await prisma.user.count();
+export const createUser = async (data: CreateUserInput) => {
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    // Check duplicate email
-    const existing = await prisma.user.findUnique({
-        where: { email: data.email },
-    });
-
-    if (existing) {
-        throw new ApiError("Email already exists", 409);
-    }
-
-    // Role assignment
-    let role: Role;
-
-    if (count === 0) {
-        role = "ADMIN";
-    } else if (data.role) {
-        role = data.role as Role;
-    } else {
-        role = "VIEWER";
-    }
+    const role = data.role ?? Role.VIEWER;
 
     const user = await prisma.user.create({
         data: {
             name: data.name,
             email: data.email,
+            password: hashedPassword,
             role,
         },
     });
 
-    return user;
+    return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+    };
 };
 
 import { Prisma } from "@prisma/client";
@@ -100,6 +84,15 @@ export const getUsers = async (
             skip,
             take: limit,
             orderBy: { createdAt: "desc" },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                status: true,
+                createdAt: true,
+                deleted: true,
+            },
         }),
         prisma.user.count({
             where,
