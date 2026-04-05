@@ -12,7 +12,7 @@ export const mockAuth = (
     const role = (roleHeader?.toUpperCase() as Role) || "VIEWER";
 
     req.user = {
-        id: "mock-user-id", // To be replaced with JWTAuth
+        id: process.env.MOCK_USER_ID as string, // To be replaced with JWTAuth
         role,
     };
 

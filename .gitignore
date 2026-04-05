@@ -1,5 +1,7 @@
+.vscode
 node_modules
 dist
 src/generated/prisma
 .env
 notes.txt
+logs
